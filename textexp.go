@@ -13,7 +13,7 @@ type textExp struct {
 }
 
 func (e *textExp) Match(x any) bool {
-	if !isTyp(x, e.typ) {
+	if !isType(x, e.typ) {
 		return false
 	}
 	return e.match(x)
@@ -28,37 +28,31 @@ func parseTextExp(text string) (*textExp, error) {
 	case strings.HasPrefix(text, "=="):
 		return &textExp{
 			orig:  text,
-			typ:   typString,
+			typ:   typeString,
 			match: func(v any) bool { return v.(string) == text[2:] },
 		}, nil
-	case text == "___":
-		return &textExp{
-			orig:  text,
-			typ:   typAny,
-			match: func(v any) bool { return true },
-		}, nil
-	case strings.HasPrefix(text, "__"):
-		return parseTypeExp(text)
+	case strings.HasPrefix(text, "((") && strings.HasSuffix(text, "))"):
+		return parseTextTypeExp(text)
 	default:
 		return &textExp{
 			orig:  text,
-			typ:   typString,
+			typ:   typeString,
 			match: func(v any) bool { return v.(string) == text },
 		}, nil
 	}
 }
 
 var typeExpMap = map[string]typ{
-	"any":     typAny,
-	"object":  typObject,
-	"array":   typArray,
-	"string":  typString,
-	"number":  typNumber,
-	"boolean": typBool,
+	"any":     typeAny,
+	"object":  typeObject,
+	"array":   typeArray,
+	"string":  typeString,
+	"number":  typeNumber,
+	"boolean": typeBool,
 }
 
-func parseTypeExp(text string) (*textExp, error) {
-	if !strings.HasPrefix(text, "__") || !strings.HasSuffix(text, "__") {
+func parseTextTypeExp(text string) (*textExp, error) {
+	if !strings.HasPrefix(text, "((") || !strings.HasSuffix(text, "))") {
 		return nil, fmt.Errorf("jsonexp: parse type expression %s: is not type expression", text)
 	}
 	typ, ok := typeExpMap[text[2:len(text)-2]]

@@ -13,10 +13,10 @@ func Test_textExp(t *testing.T) {
 		{"==", []any{""}, []any{nil, "=="}},
 		{"==x", []any{"x"}, []any{nil, "==x"}},
 		{"==  3", []any{"  3"}, []any{nil, 3., "3"}},
-		{"==__number__", []any{"__number__"}, []any{5., 8.}},
-		{"__number__", []any{0., 0.1, -1., 4.}, []any{nil, "((number))", "number"}},
-		{"__array__", []any{[]any{}, []any{3., 1.}}, []any{nil, "array", map[string]any{"x": "y"}}},
-		{"___", []any{nil, false, "x", map[string]any{"x": 2}, []any{}}, []any{}},
+		{"==((number))", []any{"((number))"}, []any{5., 8.}},
+		{"((number))", []any{0., 0.1, -1., 4.}, []any{nil, "((number))", "number"}},
+		{"((array))", []any{[]any{}, []any{3., 1.}}, []any{nil, "array", map[string]any{"x": "y"}}},
+		{"((any))", []any{nil, false, "x", map[string]any{"x": 2}, []any{}}, []any{}},
 	}
 
 	for _, test := range tests {

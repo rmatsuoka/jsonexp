@@ -3,29 +3,29 @@ package jsonexp
 type typ int
 
 const (
-	typNull typ = iota
-	typObject
-	typArray
-	typString
-	typNumber
-	typBool
-	typAny
+	typeNull typ = iota
+	typeObject
+	typeArray
+	typeString
+	typeNumber
+	typeBool
+	typeAny
 )
 
-func isTyp(value any, typ typ) bool {
+func isType(value any, typ typ) bool {
 	switch value.(type) {
 	case nil:
-		return typ == typAny || typ == typNull
+		return typ == typeAny || typ == typeNull
 	case map[string]any:
-		return typ == typAny || typ == typObject
+		return typ == typeAny || typ == typeObject
 	case []any:
-		return typ == typAny || typ == typArray
+		return typ == typeAny || typ == typeArray
 	case string:
-		return typ == typAny || typ == typString
+		return typ == typeAny || typ == typeString
 	case float64:
-		return typ == typAny || typ == typNumber
+		return typ == typeAny || typ == typeNumber
 	case bool:
-		return typ == typAny || typ == typBool
+		return typ == typeAny || typ == typeBool
 	default:
 		panic("unexpected type")
 	}
