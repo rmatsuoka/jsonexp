@@ -19,8 +19,30 @@ func (d SliceDiffs) Text(w io.Writer, nx, ny int, xstr, ystr func(int) string) {
 		return cmp.Or(cmp.Compare(p.Xi, q.Xi), cmp.Compare(p.Yi, q.Yi))
 	})
 
-	for xi := range nx {
+	i := 0
+	for ; d[i].Xi == -1; i++ {
+		fmt.Fprintf(w, "+ %s\n", ystr(d[i].Yi))
+	}
 
+	for xi := range nx {
+		first := true
+		for ; i < len(d) && d[i].Xi == xi; i++ {
+			switch d[i].Op {
+			case OpDeletion:
+				fmt.Fprintf(w, "- %s\n", xstr(xi))
+			case OpInsertion:
+				if first {
+					fmt.Fprintf(w, "  %s\n", xstr(xi))
+				}
+				fmt.Fprintf(w, "+ %s\n", ystr(d[i].Yi))
+			case OpSubStitution:
+				fmt.Fprintf(w, "- %s\n+ %s\n", xstr(xi), ystr(d[i].Yi))
+			}
+			first = false
+		}
+		if first {
+			fmt.Fprintf(w, "  %s\n", xstr(xi))
+		}
 	}
 }
 
@@ -46,13 +68,6 @@ func Slice(nx, ny int, equal func(ix, iy int) bool) SliceDiffs {
 			}
 			dist[i][j] = min(dist[i-1][j]+1, dist[i][j-1]+1, dist[i-1][j-1]+z)
 		}
-	}
-
-	for i := range dist {
-		for j := range dist[i] {
-			fmt.Printf(" %d", dist[i][j])
-		}
-		fmt.Printf("\n")
 	}
 
 	var diffs []SliceDiff
