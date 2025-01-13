@@ -8,10 +8,10 @@ import (
 	"strings"
 )
 
-type path []key
+type Path []key
 
 func newPath(keys ...any) []key {
-	p := path{}
+	p := Path{}
 	for _, k := range keys {
 		switch k := k.(type) {
 		case string:
@@ -25,17 +25,17 @@ func newPath(keys ...any) []key {
 	return p
 }
 
-func (p path) Clone() path {
-	n := make(path, len(p))
+func (p Path) Clone() Path {
+	n := make(Path, len(p))
 	copy(n, p)
 	return n
 }
 
-func (p path) CloneAppend(key key) path {
+func (p Path) CloneAppend(key key) Path {
 	return append(p.Clone(), key)
 }
 
-func (p path) String() string {
+func (p Path) String() string {
 	b := strings.Builder{}
 	for _, k := range p {
 		b.WriteString(k.String())
@@ -43,13 +43,13 @@ func (p path) String() string {
 	return b.String()
 }
 
-func (p path) Equal(q path) bool {
+func (p Path) Equal(q Path) bool {
 	return slices.EqualFunc(p, q, func(x, y key) bool {
 		return x == y
 	})
 }
 
-func (p path) Compare(q path) int {
+func (p Path) Compare(q Path) int {
 	return slices.CompareFunc(p, q, func(x, y key) int {
 		// define
 		// object > number
@@ -72,7 +72,7 @@ func (p path) Compare(q path) int {
 	})
 }
 
-func (p path) isAncestorOf(child path) bool {
+func (p Path) isAncestorOf(child Path) bool {
 	if len(p) >= len(child) {
 		return false
 	}
@@ -104,7 +104,7 @@ func (k arrayIndex) String() string {
 	return "[" + strconv.Itoa(int(k)) + "]"
 }
 
-func query(value any, p path) (any, error) {
+func query(value any, p Path) (any, error) {
 	for _, k := range p {
 		switch k := k.(type) {
 		case objectKey:

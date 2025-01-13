@@ -7,7 +7,7 @@ import (
 )
 
 type Diff struct {
-	At   path
+	At   Path
 	Type Operation
 }
 
@@ -51,8 +51,8 @@ func SortDiff(ds []Diff) {
 	})
 }
 
-func SearchDiff(ds []Diff, at path) (int, bool) {
-	return slices.BinarySearchFunc(ds, at, func(x Diff, p path) int {
+func SearchDiff(ds []Diff, at Path) (int, bool) {
+	return slices.BinarySearchFunc(ds, at, func(x Diff, p Path) int {
 		return x.At.Compare(p)
 	})
 }

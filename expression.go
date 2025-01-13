@@ -124,7 +124,7 @@ func toExpValue(raw any) (expValue, error) {
 	}
 }
 
-func listDiff(exp expValue, value value, at path) (diffs []Diff) {
+func listDiff(exp expValue, value value, at Path) (diffs []Diff) {
 	switch exp := exp.(type) {
 	case expObject:
 		obj, ok := value.(object)
@@ -180,7 +180,7 @@ func listDiff(exp expValue, value value, at path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffObject(exp expObject, obj object, at path) (diffs []Diff) {
+func listDiffObject(exp expObject, obj object, at Path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
 		at := at.CloneAppend(objectKey(k))
@@ -208,7 +208,7 @@ func listDiffObject(exp expObject, obj object, at path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffArray(exp expArray, arr array, at path) (diffs []Diff) {
+func listDiffArray(exp expArray, arr array, at Path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return equalValue(exp[ix], arr[iy])
 	})

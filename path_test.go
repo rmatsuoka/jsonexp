@@ -18,7 +18,7 @@ func mustUnmarshal(js string) any {
 func Test_path(t *testing.T) {
 
 	tests := []struct {
-		p    path
+		p    Path
 		want string
 	}{
 		{newPath(), ""},
@@ -82,7 +82,7 @@ func Test_query(t *testing.T) {
 		`)
 
 		tests := []struct {
-			path path
+			path Path
 			want any
 			err  error
 		}{

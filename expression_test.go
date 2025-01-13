@@ -65,7 +65,7 @@ func TestParse(t *testing.T) {
   }
 }`)
 
-	diffs := listDiff(e.value, val, path{})
+	diffs := listDiff(e.value, val, Path{})
 	t.Logf("%+v", diffs)
 
 	SortDiff(diffs)
@@ -75,6 +75,6 @@ func TestParse(t *testing.T) {
 		ds: diffs,
 		di: 0,
 	}
-	dt.diffTextValue(path{}, e.value, val, "")
+	dt.diffTextValue(Path{}, e.value, val, "")
 	t.Log(b.String())
 }
