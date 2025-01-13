@@ -40,7 +40,7 @@ func Test_query(t *testing.T) {
 		tests := []any{1, "z", nil, map[string]any{"x": 1}, []any{}}
 		p := (Path)(nil)
 		for _, value := range tests {
-			got, err := p.query(value)
+			got, err := p.Query(value)
 			if err != nil {
 				t.Errorf("query(%+v, nil) returns unexpected non-nil error: %v", value, err)
 			}
@@ -94,16 +94,16 @@ func Test_query(t *testing.T) {
 		}
 
 		for _, test := range tests {
-			got, err := test.path.query(value)
+			got, err := test.path.Query(value)
 			if err != test.err {
-				t.Errorf("query(value, %v) returns unexpceted error: %v", test.path, err)
+				t.Errorf("(%v).query(value) returns unexpceted error: %v", test.path, err)
 				continue
 			}
 			if err != nil {
 				continue
 			}
 			if !reflect.DeepEqual(test.want, got) {
-				t.Errorf("query(value, %v) returns %v, want %v", test.path, got, test.want)
+				t.Errorf("(%v).query(value) returns %v, want %v", test.path, got, test.want)
 			}
 		}
 	})

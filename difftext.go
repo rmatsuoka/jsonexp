@@ -47,9 +47,9 @@ func (t *diffTexter) diffTextObject(at Path, exp expObject, obj Object, prefix s
 
 	fmt.Fprintf(t.w, "{\n")
 	for _, k := range keys {
-		keyAt := at.CloneAppend(objectKey(k))
+		keyAt := at.CloneAppend(ObjectKey(k))
 		for ; t.rest() && t.cur().At.Compare(keyAt) < 0; t.next() {
-			key := string(t.cur().At[len(at)].(objectKey))
+			key := string(t.cur().At[len(at)].(ObjectKey))
 			fmt.Fprintf(t.w, "cx - %s  %s: %J\n", prefix, key, jsonFormatter{exp[key]})
 		}
 		// log.Printf("keyAt = %s, t.ds[t.di].At = %s, keyAt.Equal(..) = %t, keyAt.isParent(..) = %t", keyAt, t.ds[t.di].At, keyAt.Equal(t.ds[t.di].At), keyAt.isParentOf(t.ds[t.di].At))
@@ -75,7 +75,7 @@ func (t *diffTexter) diffTextObject(at Path, exp expObject, obj Object, prefix s
 	}
 
 	for ; t.rest() && at.IsAncestorOf(t.cur().At); t.next() {
-		key := string(t.cur().At[len(at)].(objectKey))
+		key := string(t.cur().At[len(at)].(ObjectKey))
 		switch t.cur().Type {
 		case OpDeletion:
 			fmt.Fprintf(t.w, "rd - %s  %s: %J\n", prefix, key, jsonFormatter{exp[key]})
@@ -89,9 +89,9 @@ func (t *diffTexter) diffTextObject(at Path, exp expObject, obj Object, prefix s
 func (t *diffTexter) diffTextArray(at Path, exp expArray, arr Array, prefix string) {
 	fmt.Fprintf(t.w, "[\n")
 	for i := range arr {
-		iAt := at.CloneAppend(arrayIndex(i))
+		iAt := at.CloneAppend(ArrayIndex(i))
 		for ; t.rest() && t.cur().At.Compare(iAt) < 0; t.next() {
-			index := int(t.cur().At[len(at)].(arrayIndex))
+			index := int(t.cur().At[len(at)].(ArrayIndex))
 			fmt.Fprintf(t.w, "cx - %s  %J\n", prefix, jsonFormatter{exp[index]})
 		}
 		if t.rest() && iAt.Equal(t.cur().At) {
@@ -114,7 +114,7 @@ func (t *diffTexter) diffTextArray(at Path, exp expArray, arr Array, prefix stri
 		}
 	}
 	for ; t.rest() && at.IsAncestorOf(t.cur().At); t.next() {
-		index := int(t.cur().At[len(at)].(arrayIndex))
+		index := int(t.cur().At[len(at)].(ArrayIndex))
 		switch t.cur().Type {
 		case OpDeletion:
 			fmt.Fprintf(t.w, "rd - %s  %J\n", prefix, jsonFormatter{exp[index]})

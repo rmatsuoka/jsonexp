@@ -4,20 +4,19 @@ import (
 	"cmp"
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 )
 
-type Path []key
+type Path []Node
 
-func NewPath(keys ...any) []key {
+func NewPath(nodes ...any) Path {
 	p := Path{}
-	for _, k := range keys {
-		switch k := k.(type) {
+	for _, n := range nodes {
+		switch n := n.(type) {
 		case string:
-			p = append(p, objectKey(k))
+			p = append(p, ObjectKey(n))
 		case int:
-			p = append(p, arrayIndex(k))
+			p = append(p, ArrayIndex(n))
 		default:
 			panic("not string or int")
 		}
@@ -31,37 +30,42 @@ func (p Path) Clone() Path {
 	return n
 }
 
-func (p Path) CloneAppend(key key) Path {
-	return append(p.Clone(), key)
+func (p Path) CloneAppend(node Node) Path {
+	return append(p.Clone(), node)
 }
 
 func (p Path) String() string {
 	b := strings.Builder{}
-	for _, k := range p {
-		b.WriteString(k.String())
+	for _, n := range p {
+		switch n := n.(type) {
+		case ObjectKey:
+			b.WriteString("." + string(n))
+		case ArrayIndex:
+			fmt.Fprintf(&b, "[%d]", int(n))
+		}
 	}
 	return b.String()
 }
 
 func (p Path) Equal(q Path) bool {
-	return slices.EqualFunc(p, q, func(x, y key) bool {
+	return slices.EqualFunc(p, q, func(x, y Node) bool {
 		return x == y
 	})
 }
 
 func (p Path) Compare(q Path) int {
-	return slices.CompareFunc(p, q, func(x, y key) int {
+	return slices.CompareFunc(p, q, func(x, y Node) int {
 		// define
 		// object > number
 		switch x := x.(type) {
-		case objectKey:
-			y, ok := y.(objectKey)
+		case ObjectKey:
+			y, ok := y.(ObjectKey)
 			if !ok {
 				return -1
 			}
 			return cmp.Compare(x, y)
-		case arrayIndex:
-			y, ok := y.(arrayIndex)
+		case ArrayIndex:
+			y, ok := y.(ArrayIndex)
 			if !ok {
 				return 1
 			}
@@ -84,47 +88,39 @@ func (p Path) IsAncestorOf(child Path) bool {
 	return true
 }
 
-type key interface {
-	key()
-	String() string
+type Node interface {
+	Node()
 }
 
-type objectKey string
+type ObjectKey string
 
-func (objectKey) key() {}
-func (k objectKey) String() string {
-	return "." + string(k)
-}
+func (ObjectKey) Node() {}
 
-type arrayIndex int
+type ArrayIndex int
 
-func (arrayIndex) key() {}
+func (ArrayIndex) Node() {}
 
-func (k arrayIndex) String() string {
-	return "[" + strconv.Itoa(int(k)) + "]"
-}
-
-func (p Path) query(value any) (any, error) {
-	for _, k := range p {
-		switch k := k.(type) {
-		case objectKey:
+func (p Path) Query(value Value) (Value, error) {
+	for _, n := range p {
+		switch n := n.(type) {
+		case ObjectKey:
 			obj, ok := value.(Object)
 			if !ok {
 				return nil, fmt.Errorf("is not object")
 			}
-			value, ok = obj[string(k)]
+			value, ok = obj[string(n)]
 			if !ok {
 				return nil, fmt.Errorf("not found")
 			}
-		case arrayIndex:
+		case ArrayIndex:
 			arr, ok := value.(Array)
 			if !ok {
 				return nil, fmt.Errorf("is not array")
 			}
-			if k < 0 && len(arr) <= int(k) {
+			if n < 0 && len(arr) <= int(n) {
 				return nil, fmt.Errorf("index is out of range")
 			}
-			value = arr[k]
+			value = arr[n]
 		default:
 			return nil, fmt.Errorf("wrong path")
 		}

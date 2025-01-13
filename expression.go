@@ -183,7 +183,7 @@ func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
 func listDiffObject(exp expObject, obj Object, at Path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
-		at := at.CloneAppend(objectKey(k))
+		at := at.CloneAppend(ObjectKey(k))
 		expv, ok := exp.get(k)
 		if !ok {
 			diffs = append(diffs, Diff{
@@ -201,7 +201,7 @@ func listDiffObject(exp expObject, obj Object, at Path) (diffs []Diff) {
 			continue
 		}
 		diffs = append(diffs, Diff{
-			At:   at.CloneAppend(objectKey(k)),
+			At:   at.CloneAppend(ObjectKey(k)),
 			Type: OpDeletion,
 		})
 	}
@@ -214,11 +214,11 @@ func listDiffArray(exp expArray, arr Array, at Path) (diffs []Diff) {
 	})
 	for _, d := range ds {
 		if d.Op == diff.OpSubStitution {
-			diffs = append(diffs, listDiff(exp[d.Xi], arr[d.Yi], at.CloneAppend(arrayIndex(d.Xi)))...)
+			diffs = append(diffs, listDiff(exp[d.Xi], arr[d.Yi], at.CloneAppend(ArrayIndex(d.Xi)))...)
 			continue
 		}
 		diffs = append(diffs, Diff{
-			At:   at.CloneAppend(arrayIndex(d.Yi)),
+			At:   at.CloneAppend(ArrayIndex(d.Yi)),
 			Type: fromDiffOp(d.Op),
 		})
 	}
