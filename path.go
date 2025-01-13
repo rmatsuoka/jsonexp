@@ -1,7 +1,9 @@
 package jsonexp
 
 import (
+	"cmp"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -39,6 +41,50 @@ func (p path) String() string {
 		b.WriteString(k.String())
 	}
 	return b.String()
+}
+
+func (p path) Equal(q path) bool {
+	return slices.EqualFunc(p, q, func(x, y key) bool {
+		return x == y
+	})
+}
+
+func (p path) Compare(q path) int {
+	return slices.CompareFunc(p, q, func(x, y key) int {
+		// define
+		// object > number
+		switch x := x.(type) {
+		case objectKey:
+			y, ok := y.(objectKey)
+			if !ok {
+				return -1
+			}
+			return cmp.Compare(x, y)
+		case arrayIndex:
+			y, ok := y.(arrayIndex)
+			if !ok {
+				return 1
+			}
+			return cmp.Compare(x, y)
+		default:
+			panic("unreachable")
+		}
+	})
+}
+
+func (p path) HasPrefix(q path) bool {
+	if len(p) < len(q) {
+		return false
+	}
+	for i := range p {
+		if i < len(q) {
+			break
+		}
+		if p[i] != q[i] {
+			return false
+		}
+	}
+	return true
 }
 
 type key interface {

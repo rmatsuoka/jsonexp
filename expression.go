@@ -1,8 +1,12 @@
 package jsonexp
 
 import (
+	"cmp"
 	"encoding/json"
 	"maps"
+	"slices"
+
+	"github.com/rmatsuoka/jsonexp/internal/diff"
 )
 
 type (
@@ -22,6 +26,49 @@ func (e expObject) get(key string) (expValue, bool) {
 		v, ok = e["..."]
 	}
 	return v, ok
+}
+
+func (e expObject) equalLen(l int) bool {
+	if _, ok := e["..."]; ok {
+		return true
+	}
+	return len(e) == l
+}
+
+func (e expObject) sortedKeys() []string {
+	return slices.SortedFunc(maps.Keys(e), func(s1, s2 string) int {
+		if s1 == s2 {
+			return 0
+		}
+		if s1 == "..." {
+			return -1
+		}
+		if s2 == "..." {
+			return 1
+		}
+		return cmp.Compare(s1, s2)
+	})
+}
+
+func (e expObject) Match(obj object) bool {
+	if !e.equalLen(len(obj)) {
+		return false
+	}
+	restKey := collectKey(maps.Keys(e), true)
+	delete(restKey, "...")
+
+	for k, v := range obj {
+		expv, ok := e.get(k)
+		if !ok {
+			return false
+		}
+		if !equalValue(expv, v) {
+			return false
+		}
+		delete(restKey, k)
+	}
+
+	return len(restKey) == 0
 }
 
 type Expression struct {
@@ -56,13 +103,14 @@ func toExpValue(raw any) (expValue, error) {
 		}
 		return expo, nil
 	case []any:
+		exp := make(expArray, len(raw))
 		for i, v := range raw {
-			raw[i], err = toExpValue(v)
+			exp[i], err = toExpValue(v)
 			if err != nil {
 				return nil, err
 			}
 		}
-		return raw, nil
+		return exp, nil
 	case string:
 		return parseTextExp(raw)
 	case float64:
@@ -77,7 +125,41 @@ func toExpValue(raw any) (expValue, error) {
 }
 
 func listDiff(exp expValue, value value, at path) (diffs []path) {
-	panic("x")
+	switch exp := exp.(type) {
+	case expObject:
+		obj, ok := value.(object)
+		if !ok {
+			diffs = append(diffs, at)
+			return diffs
+		}
+		diffs = append(diffs, listDiffObject(exp, obj, at)...)
+	case expArray:
+		arr, ok := value.(array)
+		if !ok {
+			diffs = append(diffs, at)
+			return diffs
+		}
+		diffs = append(diffs, listDiffArray(exp, arr, at)...)
+	case *textExp:
+		if !exp.Match(value) {
+			diffs = append(diffs, at)
+		}
+	case expNumber:
+		if exp != value {
+			diffs = append(diffs, at)
+		}
+	case expBoolean:
+		if exp != value {
+			diffs = append(diffs, at)
+		}
+	case nil:
+		if value != nil {
+			diffs = append(diffs, at)
+		}
+	default:
+		panic("unreachable")
+	}
+	return diffs
 }
 
 func listDiffObject(exp expObject, obj object, at path) (diffs []path) {
@@ -102,6 +184,16 @@ func listDiffObject(exp expObject, obj object, at path) (diffs []path) {
 	return diffs
 }
 
-func listDiffArray(exp expObject) {
-	panic("x")
+func listDiffArray(exp expArray, arr array, at path) (diffs []path) {
+	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
+		return equalValue(exp[ix], arr[iy])
+	})
+	for _, d := range ds {
+		if d.Op == diff.OpSubStitution {
+			diffs = append(diffs, listDiff(exp[d.Xi], arr[d.Yi], at.CloneAppend(arrayIndex(d.Xi)))...)
+			continue
+		}
+		diffs = append(diffs, at.CloneAppend(arrayIndex(d.Xi)))
+	}
+	return diffs
 }
