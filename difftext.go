@@ -8,7 +8,7 @@ import (
 	"slices"
 )
 
-func DiffText(w io.Writer, ds []Diff, exp expValue, val value) {
+func DiffText(w io.Writer, ds []Diff, exp expValue, val Value) {
 
 }
 
@@ -30,19 +30,19 @@ func (t *diffTexter) rest() bool {
 }
 
 // diffTextValue must be called only if `at.isParent(t.cur().At)`
-func (t *diffTexter) diffTextValue(at Path, exp expValue, val value, prefix string) {
+func (t *diffTexter) diffTextValue(at Path, exp expValue, val Value, prefix string) {
 	switch exp := exp.(type) {
 	case expObject:
-		t.diffTextObject(at, exp, val.(object), prefix)
+		t.diffTextObject(at, exp, val.(Object), prefix)
 	case expArray:
-		t.diffTextArray(at, exp, val.(array), prefix)
+		t.diffTextArray(at, exp, val.(Array), prefix)
 	default:
 		panic("unreachable")
 	}
 }
 
 // diffTextValue must be called if `at.isParent(t.cur().At)`
-func (t *diffTexter) diffTextObject(at Path, exp expObject, obj object, prefix string) {
+func (t *diffTexter) diffTextObject(at Path, exp expObject, obj Object, prefix string) {
 	keys := slices.Sorted(maps.Keys(obj))
 
 	fmt.Fprintf(t.w, "{\n")
@@ -86,7 +86,7 @@ func (t *diffTexter) diffTextObject(at Path, exp expObject, obj object, prefix s
 	fmt.Fprintf(t.w, "     %s}\n", prefix)
 }
 
-func (t *diffTexter) diffTextArray(at Path, exp expArray, arr array, prefix string) {
+func (t *diffTexter) diffTextArray(at Path, exp expArray, arr Array, prefix string) {
 	fmt.Fprintf(t.w, "[\n")
 	for i := range arr {
 		iAt := at.CloneAppend(arrayIndex(i))

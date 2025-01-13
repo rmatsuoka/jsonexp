@@ -16,15 +16,15 @@ func isType(value any, typ typ) bool {
 	switch value.(type) {
 	case nil:
 		return typ == typeAny || typ == typeNull
-	case map[string]any:
+	case Object:
 		return typ == typeAny || typ == typeObject
-	case []any:
+	case Array:
 		return typ == typeAny || typ == typeArray
-	case string:
+	case String:
 		return typ == typeAny || typ == typeString
-	case float64:
+	case Number:
 		return typ == typeAny || typ == typeNumber
-	case bool:
+	case Boolean:
 		return typ == typeAny || typ == typeBool
 	default:
 		panic("unexpected type")

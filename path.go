@@ -108,7 +108,7 @@ func (p Path) query(value any) (any, error) {
 	for _, k := range p {
 		switch k := k.(type) {
 		case objectKey:
-			obj, ok := value.(map[string]any)
+			obj, ok := value.(Object)
 			if !ok {
 				return nil, fmt.Errorf("is not object")
 			}
@@ -117,7 +117,7 @@ func (p Path) query(value any) (any, error) {
 				return nil, fmt.Errorf("not found")
 			}
 		case arrayIndex:
-			arr, ok := value.([]any)
+			arr, ok := value.(Array)
 			if !ok {
 				return nil, fmt.Errorf("is not array")
 			}

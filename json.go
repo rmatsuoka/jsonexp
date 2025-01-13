@@ -1,13 +1,11 @@
 package jsonexp
 
 type (
-	// value is object | array | string | number | boolean | nil
-	value  = any
-	object = map[string]value
-	array  = []value
-	// string is just string
-	number  = float64
-	boolean = bool
+	// Value is Object | Array | String | Number | Boolean | nil
+	Value   = any
+	Object  = map[string]Value
+	Array   = []Value
+	String  = string
+	Number  = float64
+	Boolean = bool
 )
-
-var null any = nil

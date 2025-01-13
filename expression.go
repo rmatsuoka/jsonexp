@@ -50,7 +50,7 @@ func (e expObject) sortedKeys() []string {
 	})
 }
 
-func (e expObject) Match(obj object) bool {
+func (e expObject) Match(obj Object) bool {
 	if !e.equalLen(len(obj)) {
 		return false
 	}
@@ -115,7 +115,7 @@ func toExpValue(raw any) (expValue, error) {
 		return parseTextExp(raw)
 	case float64:
 		return raw, nil
-	case boolean:
+	case bool:
 		return raw, nil
 	case nil:
 		return raw, nil
@@ -124,10 +124,10 @@ func toExpValue(raw any) (expValue, error) {
 	}
 }
 
-func listDiff(exp expValue, value value, at Path) (diffs []Diff) {
+func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
 	switch exp := exp.(type) {
 	case expObject:
-		obj, ok := value.(object)
+		obj, ok := value.(Object)
 		if !ok {
 			diffs = append(diffs, Diff{
 				At:   at,
@@ -137,7 +137,7 @@ func listDiff(exp expValue, value value, at Path) (diffs []Diff) {
 		}
 		diffs = append(diffs, listDiffObject(exp, obj, at)...)
 	case expArray:
-		arr, ok := value.(array)
+		arr, ok := value.(Array)
 		if !ok {
 			diffs = append(diffs, Diff{
 				At:   at,
@@ -180,7 +180,7 @@ func listDiff(exp expValue, value value, at Path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffObject(exp expObject, obj object, at Path) (diffs []Diff) {
+func listDiffObject(exp expObject, obj Object, at Path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
 		at := at.CloneAppend(objectKey(k))
@@ -208,7 +208,7 @@ func listDiffObject(exp expObject, obj object, at Path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffArray(exp expArray, arr array, at Path) (diffs []Diff) {
+func listDiffArray(exp expArray, arr Array, at Path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return equalValue(exp[ix], arr[iy])
 	})
