@@ -72,15 +72,12 @@ func (p path) Compare(q path) int {
 	})
 }
 
-func (p path) HasPrefix(q path) bool {
-	if len(p) < len(q) {
+func (p path) isParentOf(child path) bool {
+	if len(p) >= len(child) {
 		return false
 	}
 	for i := range p {
-		if i < len(q) {
-			break
-		}
-		if p[i] != q[i] {
+		if p[i] != child[i] {
 			return false
 		}
 	}

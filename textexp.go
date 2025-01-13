@@ -1,6 +1,7 @@
 package jsonexp
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -21,6 +22,10 @@ func (e *textExp) Match(x any) bool {
 
 func (e *textExp) String() string {
 	return e.orig
+}
+
+func (e *textExp) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.orig)
 }
 
 func parseTextExp(text string) (*textExp, error) {

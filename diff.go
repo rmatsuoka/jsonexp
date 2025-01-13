@@ -1,6 +1,10 @@
 package jsonexp
 
-import "slices"
+import (
+	"slices"
+
+	"github.com/rmatsuoka/jsonexp/internal/diff"
+)
 
 type Diff struct {
 	At   path
@@ -23,6 +27,19 @@ func (o Operation) String() string {
 		return "deletion"
 	case OpSubStitution:
 		return "substitution"
+	default:
+		panic("unreachable")
+	}
+}
+
+func fromDiffOp(o diff.Operation) Operation {
+	switch o {
+	case diff.OpInsertion:
+		return OpInsertion
+	case diff.OpDeletion:
+		return OpDeletion
+	case diff.OpSubStitution:
+		return OpSubStitution
 	default:
 		panic("unreachable")
 	}

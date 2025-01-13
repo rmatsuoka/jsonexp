@@ -124,37 +124,55 @@ func toExpValue(raw any) (expValue, error) {
 	}
 }
 
-func listDiff(exp expValue, value value, at path) (diffs []path) {
+func listDiff(exp expValue, value value, at path) (diffs []Diff) {
 	switch exp := exp.(type) {
 	case expObject:
 		obj, ok := value.(object)
 		if !ok {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 			return diffs
 		}
 		diffs = append(diffs, listDiffObject(exp, obj, at)...)
 	case expArray:
 		arr, ok := value.(array)
 		if !ok {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 			return diffs
 		}
 		diffs = append(diffs, listDiffArray(exp, arr, at)...)
 	case *textExp:
 		if !exp.Match(value) {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 		}
 	case expNumber:
 		if exp != value {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 		}
 	case expBoolean:
 		if exp != value {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 		}
 	case nil:
 		if value != nil {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpSubStitution,
+			})
 		}
 	default:
 		panic("unreachable")
@@ -162,13 +180,16 @@ func listDiff(exp expValue, value value, at path) (diffs []path) {
 	return diffs
 }
 
-func listDiffObject(exp expObject, obj object, at path) (diffs []path) {
+func listDiffObject(exp expObject, obj object, at path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
 		at := at.CloneAppend(objectKey(k))
 		expv, ok := exp.get(k)
 		if !ok {
-			diffs = append(diffs, at)
+			diffs = append(diffs, Diff{
+				At:   at,
+				Type: OpInsertion,
+			})
 			continue
 		}
 		diffs = append(diffs, listDiff(expv, obj[k], at)...)
@@ -179,12 +200,15 @@ func listDiffObject(exp expObject, obj object, at path) (diffs []path) {
 		if k == "..." {
 			continue
 		}
-		diffs = append(diffs, at.CloneAppend(objectKey(k)))
+		diffs = append(diffs, Diff{
+			At:   at.CloneAppend(objectKey(k)),
+			Type: OpDeletion,
+		})
 	}
 	return diffs
 }
 
-func listDiffArray(exp expArray, arr array, at path) (diffs []path) {
+func listDiffArray(exp expArray, arr array, at path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return equalValue(exp[ix], arr[iy])
 	})
@@ -193,7 +217,10 @@ func listDiffArray(exp expArray, arr array, at path) (diffs []path) {
 			diffs = append(diffs, listDiff(exp[d.Xi], arr[d.Yi], at.CloneAppend(arrayIndex(d.Xi)))...)
 			continue
 		}
-		diffs = append(diffs, at.CloneAppend(arrayIndex(d.Xi)))
+		diffs = append(diffs, Diff{
+			At:   at.CloneAppend(arrayIndex(d.Yi)),
+			Type: fromDiffOp(d.Op),
+		})
 	}
 	return diffs
 }

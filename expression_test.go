@@ -1,18 +1,36 @@
 package jsonexp
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestParse(t *testing.T) {
 	e, err := Parse([]byte(`
 {
   "hello": {
+    "a": "((number))",
 	"num": 1,
 	"arr": [
+	  {
+	    "obj": {
+		  "boolean": false,
+	      "a": 1,
+		  "b": 2,
+		  "c": 3
+	    }
+      },
 	  {"x": "y"},
 	  {"y": 1},
 	  {"z": "w"}
 	],
-	"nil": 3
+	"nil": null,
+	"aobj": {
+	  "inner": "inner",
+	  "num": 3
+	},
+	"x": "y",
+	"...": "..."
   }
 }	
 	`))
@@ -23,17 +41,40 @@ func TestParse(t *testing.T) {
 	val := mustUnmarshal(`
 {
   "hello": {
-    "num": 3,
-	"arr": [
+    "a": 3,
+    "num": 5,
+	"arr": 	[
+	  {
+	    "obj": {
+	      "a": 1,
+		  "b": 2,
+		  "c": 3
+	    }
+      },
 	  {"x": "y"},
-	  {"y": "x"},
-	  {"z": "w"},
-	  {"x": "x"}
+	  {"y": 1},
+	  {"z": "w"}
 	],
-	"nil": null
+	"nil": null,
+	"aobj": {
+	  "inner": "inner",
+	  "num": 3
+    },
+	"x": "y",
+	"z": "..."
   }
 }`)
 
 	diffs := listDiff(e.value, val, path{})
 	t.Logf("%+v", diffs)
+
+	SortDiff(diffs)
+	b := strings.Builder{}
+	dt := diffTexter{
+		w:  &b,
+		ds: diffs,
+		di: 0,
+	}
+	dt.diffTextValue(path{}, e.value, val, "")
+	t.Log(b.String())
 }
