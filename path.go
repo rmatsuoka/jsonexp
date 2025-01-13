@@ -10,7 +10,7 @@ import (
 
 type Path []key
 
-func newPath(keys ...any) []key {
+func NewPath(keys ...any) []key {
 	p := Path{}
 	for _, k := range keys {
 		switch k := k.(type) {
@@ -72,7 +72,7 @@ func (p Path) Compare(q Path) int {
 	})
 }
 
-func (p Path) isAncestorOf(child Path) bool {
+func (p Path) IsAncestorOf(child Path) bool {
 	if len(p) >= len(child) {
 		return false
 	}
@@ -104,7 +104,7 @@ func (k arrayIndex) String() string {
 	return "[" + strconv.Itoa(int(k)) + "]"
 }
 
-func query(value any, p Path) (any, error) {
+func (p Path) query(value any) (any, error) {
 	for _, k := range p {
 		switch k := k.(type) {
 		case objectKey:

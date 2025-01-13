@@ -21,11 +21,11 @@ func Test_path(t *testing.T) {
 		p    Path
 		want string
 	}{
-		{newPath(), ""},
-		{newPath(3), "[3]"},
-		{newPath("a"), ".a"},
-		{newPath(1, "x", 5), "[1].x[5]"},
-		{newPath("p", "q", "r"), ".p.q.r"},
+		{NewPath(), ""},
+		{NewPath(3), "[3]"},
+		{NewPath("a"), ".a"},
+		{NewPath(1, "x", 5), "[1].x[5]"},
+		{NewPath("p", "q", "r"), ".p.q.r"},
 	}
 
 	for _, test := range tests {
@@ -38,8 +38,9 @@ func Test_path(t *testing.T) {
 func Test_query(t *testing.T) {
 	t.Run("nil path", func(t *testing.T) {
 		tests := []any{1, "z", nil, map[string]any{"x": 1}, []any{}}
+		p := (Path)(nil)
 		for _, value := range tests {
-			got, err := query(value, nil)
+			got, err := p.query(value)
 			if err != nil {
 				t.Errorf("query(%+v, nil) returns unexpected non-nil error: %v", value, err)
 			}
@@ -86,14 +87,14 @@ func Test_query(t *testing.T) {
 			want any
 			err  error
 		}{
-			{newPath("age"), 27.0, nil},
-			{newPath("spouse"), nil, nil},
-			{newPath("address", "city"), "New York", nil},
-			{newPath("phone_numbers", 1, "type"), "office", nil},
+			{NewPath("age"), 27.0, nil},
+			{NewPath("spouse"), nil, nil},
+			{NewPath("address", "city"), "New York", nil},
+			{NewPath("phone_numbers", 1, "type"), "office", nil},
 		}
 
 		for _, test := range tests {
-			got, err := query(value, test.path)
+			got, err := test.path.query(value)
 			if err != test.err {
 				t.Errorf("query(value, %v) returns unexpceted error: %v", test.path, err)
 				continue
