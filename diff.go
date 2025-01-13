@@ -50,9 +50,3 @@ func SortDiff(ds []Diff) {
 		return x.At.Compare(y.At)
 	})
 }
-
-func SearchDiff(ds []Diff, at Path) (int, bool) {
-	return slices.BinarySearchFunc(ds, at, func(x Diff, p Path) int {
-		return x.At.Compare(p)
-	})
-}
