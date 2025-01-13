@@ -17,6 +17,10 @@ func NewPath(nodes ...any) Path {
 			p = append(p, ObjectKey(n))
 		case int:
 			p = append(p, ArrayIndex(n))
+		case ObjectKey:
+			p = append(p, n)
+		case ArrayIndex:
+			p = append(p, n)
 		default:
 			panic("not string or int")
 		}
