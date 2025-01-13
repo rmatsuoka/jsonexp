@@ -65,7 +65,7 @@ func (t *diffTexter) diffTextObject(at path, exp expObject, obj object, prefix s
 				panic("unreacable")
 			}
 			t.next()
-		} else if t.rest() && keyAt.isParentOf(t.cur().At) {
+		} else if t.rest() && keyAt.isAncestorOf(t.cur().At) {
 			fmt.Fprintf(t.w, "pa   %s  %s:", prefix, k)
 			t.diffTextValue(keyAt, exp[k], obj[k], prefix+"  ")
 			t.rest()
@@ -74,7 +74,7 @@ func (t *diffTexter) diffTextObject(at path, exp expObject, obj object, prefix s
 		}
 	}
 
-	for ; t.rest() && at.isParentOf(t.cur().At); t.next() {
+	for ; t.rest() && at.isAncestorOf(t.cur().At); t.next() {
 		key := string(t.cur().At[len(at)].(objectKey))
 		switch t.cur().Type {
 		case OpDeletion:
@@ -105,7 +105,7 @@ func (t *diffTexter) diffTextArray(at path, exp expArray, arr array, prefix stri
 				panic("unreacable")
 			}
 			t.next()
-		} else if t.rest() && iAt.isParentOf(t.cur().At) {
+		} else if t.rest() && iAt.isAncestorOf(t.cur().At) {
 			fmt.Fprintf(t.w, "pa   %s  ", prefix)
 			t.diffTextValue(iAt, exp[i], arr[i], prefix+"  ")
 			t.rest()
@@ -113,7 +113,7 @@ func (t *diffTexter) diffTextArray(at path, exp expArray, arr array, prefix stri
 			fmt.Fprintf(t.w, "no   %s  %J\n", prefix, jsonFormatter{arr[i]})
 		}
 	}
-	for ; t.rest() && at.isParentOf(t.cur().At); t.next() {
+	for ; t.rest() && at.isAncestorOf(t.cur().At); t.next() {
 		index := int(t.cur().At[len(at)].(arrayIndex))
 		switch t.cur().Type {
 		case OpDeletion:

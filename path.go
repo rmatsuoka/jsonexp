@@ -72,7 +72,7 @@ func (p path) Compare(q path) int {
 	})
 }
 
-func (p path) isParentOf(child path) bool {
+func (p path) isAncestorOf(child path) bool {
 	if len(p) >= len(child) {
 		return false
 	}
