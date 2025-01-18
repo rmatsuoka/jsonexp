@@ -13,28 +13,16 @@ func equalValue(exp valueExp, val Value) bool {
 		if !ok {
 			return false
 		}
-		return equalArray(exp, arr)
+		return exp.match(arr)
 	case *textExp:
 		return exp.Match(val)
 	case numberExp:
-		return exp == val
+		return exp.match(val)
 	case booleanExp:
-		return exp == val
+		return exp.match(val)
 	case nil:
 		return val == nil
 	default:
 		panic("unreachable")
 	}
-}
-
-func equalArray(exp arrayExp, arr Array) bool {
-	if len(exp) != len(arr) {
-		return false
-	}
-	for i := range exp {
-		if !equalValue(exp[i], arr[i]) {
-			return false
-		}
-	}
-	return true
 }
