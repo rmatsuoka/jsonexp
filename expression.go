@@ -10,17 +10,17 @@ import (
 )
 
 type (
-	// expValue is expObject | expArray | *textExp | expNumber | expBoolean | nil
-	expValue any
+	// valueExp is expObject | expArray | *textExp | expNumber | expBoolean | nil
+	valueExp any
 
-	expObject map[string]expValue
-	expArray  = []expValue
+	objectExp map[string]valueExp
+	arrayExp  = []valueExp
 	// expString does not exist. string will be replaced by textExp
-	expNumber  = float64
-	expBoolean = bool
+	numberExp  = float64
+	booleanExp = bool
 )
 
-func (e expObject) get(key string) (expValue, bool) {
+func (e objectExp) get(key string) (valueExp, bool) {
 	v, ok := e[key]
 	if !ok {
 		v, ok = e["..."]
@@ -28,14 +28,14 @@ func (e expObject) get(key string) (expValue, bool) {
 	return v, ok
 }
 
-func (e expObject) equalLen(l int) bool {
+func (e objectExp) equalLen(l int) bool {
 	if _, ok := e["..."]; ok {
 		return true
 	}
 	return len(e) == l
 }
 
-func (e expObject) sortedKeys() []string {
+func (e objectExp) sortedKeys() []string {
 	return slices.SortedFunc(maps.Keys(e), func(s1, s2 string) int {
 		if s1 == s2 {
 			return 0
@@ -50,7 +50,7 @@ func (e expObject) sortedKeys() []string {
 	})
 }
 
-func (e expObject) Match(obj Object) bool {
+func (e objectExp) match(obj Object) bool {
 	if !e.equalLen(len(obj)) {
 		return false
 	}
@@ -72,7 +72,7 @@ func (e expObject) Match(obj Object) bool {
 }
 
 type Expression struct {
-	value expValue
+	value valueExp
 }
 
 func Parse(b []byte) (*Expression, error) {
@@ -90,11 +90,11 @@ func Parse(b []byte) (*Expression, error) {
 	}, err
 }
 
-func toExpValue(raw any) (expValue, error) {
+func toExpValue(raw any) (valueExp, error) {
 	var err error
 	switch raw := raw.(type) {
 	case map[string]any:
-		expo := make(expObject, len(raw))
+		expo := make(objectExp, len(raw))
 		for k, v := range raw {
 			expo[k], err = toExpValue(v)
 			if err != nil {
@@ -103,7 +103,7 @@ func toExpValue(raw any) (expValue, error) {
 		}
 		return expo, nil
 	case []any:
-		exp := make(expArray, len(raw))
+		exp := make(arrayExp, len(raw))
 		for i, v := range raw {
 			exp[i], err = toExpValue(v)
 			if err != nil {
@@ -124,9 +124,9 @@ func toExpValue(raw any) (expValue, error) {
 	}
 }
 
-func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
+func listDiff(exp valueExp, value Value, at Path) (diffs []Diff) {
 	switch exp := exp.(type) {
-	case expObject:
+	case objectExp:
 		obj, ok := value.(Object)
 		if !ok {
 			diffs = append(diffs, Diff{
@@ -136,7 +136,7 @@ func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
 			return diffs
 		}
 		diffs = append(diffs, listDiffObject(exp, obj, at)...)
-	case expArray:
+	case arrayExp:
 		arr, ok := value.(Array)
 		if !ok {
 			diffs = append(diffs, Diff{
@@ -153,14 +153,14 @@ func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
 				Type: OpSubStitution,
 			})
 		}
-	case expNumber:
+	case numberExp:
 		if exp != value {
 			diffs = append(diffs, Diff{
 				At:   at,
 				Type: OpSubStitution,
 			})
 		}
-	case expBoolean:
+	case booleanExp:
 		if exp != value {
 			diffs = append(diffs, Diff{
 				At:   at,
@@ -180,7 +180,7 @@ func listDiff(exp expValue, value Value, at Path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffObject(exp expObject, obj Object, at Path) (diffs []Diff) {
+func listDiffObject(exp objectExp, obj Object, at Path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
 		at := at.CloneAppend(ObjectKey(k))
@@ -208,7 +208,7 @@ func listDiffObject(exp expObject, obj Object, at Path) (diffs []Diff) {
 	return diffs
 }
 
-func listDiffArray(exp expArray, arr Array, at Path) (diffs []Diff) {
+func listDiffArray(exp arrayExp, arr Array, at Path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return equalValue(exp[ix], arr[iy])
 	})

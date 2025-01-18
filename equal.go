@@ -1,14 +1,14 @@
 package jsonexp
 
-func equalValue(exp expValue, val Value) bool {
+func equalValue(exp valueExp, val Value) bool {
 	switch exp := exp.(type) {
-	case expObject:
+	case objectExp:
 		obj, ok := val.(Object)
 		if !ok {
 			return false
 		}
-		return exp.Match(obj)
-	case expArray:
+		return exp.match(obj)
+	case arrayExp:
 		arr, ok := val.(Array)
 		if !ok {
 			return false
@@ -16,9 +16,9 @@ func equalValue(exp expValue, val Value) bool {
 		return equalArray(exp, arr)
 	case *textExp:
 		return exp.Match(val)
-	case expNumber:
+	case numberExp:
 		return exp == val
-	case expBoolean:
+	case booleanExp:
 		return exp == val
 	case nil:
 		return val == nil
@@ -27,7 +27,7 @@ func equalValue(exp expValue, val Value) bool {
 	}
 }
 
-func equalArray(exp expArray, arr Array) bool {
+func equalArray(exp arrayExp, arr Array) bool {
 	if len(exp) != len(arr) {
 		return false
 	}
