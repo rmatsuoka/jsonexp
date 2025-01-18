@@ -25,12 +25,12 @@ func Test_textExp(t *testing.T) {
 			t.Errorf("parseTextExp(%s) returns unexpcted error: %v", test.exp, err)
 		}
 		for _, match := range test.match {
-			if !e.Match(match) {
+			if !e.match(match) {
 				t.Errorf("%s does not match %s, but should", test.exp, match)
 			}
 		}
 		for _, unmatch := range test.unmatch {
-			if e.Match(unmatch) {
+			if e.match(unmatch) {
 				t.Errorf("%s does match %s, but should not", test.exp, unmatch)
 			}
 		}

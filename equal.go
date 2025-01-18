@@ -15,7 +15,7 @@ func equalValue(exp valueExp, val Value) bool {
 		}
 		return exp.match(arr)
 	case *textExp:
-		return exp.Match(val)
+		return exp.match(val)
 	case numberExp:
 		return exp.match(val)
 	case booleanExp:

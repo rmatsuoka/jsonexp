@@ -8,18 +8,18 @@ import (
 
 // textExp is a value expression encoded in string.
 type textExp struct {
-	orig  string
-	typ   typ
-	match func(any) bool
+	orig       string
+	typ        typ
+	matchOnTyp func(any) bool
 }
 
 func (*textExp) valueExp() {}
 
-func (e *textExp) Match(x any) bool {
+func (e *textExp) match(x any) bool {
 	if !isType(x, e.typ) {
 		return false
 	}
-	return e.match(x)
+	return e.matchOnTyp(x)
 }
 
 func (e *textExp) String() string {
@@ -34,17 +34,17 @@ func parseTextExp(text string) (*textExp, error) {
 	switch {
 	case strings.HasPrefix(text, "=="):
 		return &textExp{
-			orig:  text,
-			typ:   typeString,
-			match: func(v any) bool { return v.(string) == text[2:] },
+			orig:       text,
+			typ:        typeString,
+			matchOnTyp: func(v any) bool { return v.(string) == text[2:] },
 		}, nil
 	case strings.HasPrefix(text, "((") && strings.HasSuffix(text, "))"):
 		return parseTextTypeExp(text)
 	default:
 		return &textExp{
-			orig:  text,
-			typ:   typeString,
-			match: func(v any) bool { return v.(string) == text },
+			orig:       text,
+			typ:        typeString,
+			matchOnTyp: func(v any) bool { return v.(string) == text },
 		}, nil
 	}
 }
@@ -67,8 +67,8 @@ func parseTextTypeExp(text string) (*textExp, error) {
 		return nil, fmt.Errorf("jsonexp: parse type expression %s: unknown type", text)
 	}
 	return &textExp{
-		orig:  text,
-		typ:   typ,
-		match: func(a any) bool { return true },
+		orig:       text,
+		typ:        typ,
+		matchOnTyp: func(a any) bool { return true },
 	}, nil
 }
