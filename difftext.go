@@ -80,7 +80,7 @@ func (t *diffTexter) Object(at Path, exp objectExp, obj Object, prefix string) {
 		}
 		// log.Printf("keyAt = %s, t.ds[t.di].At = %s, keyAt.Equal(..) = %t, keyAt.isParent(..) = %t", keyAt, t.ds[t.di].At, keyAt.Equal(t.ds[t.di].At), keyAt.isParentOf(t.ds[t.di].At))
 		if t.rest() && keyAt.Equal(t.cur().At) {
-			switch t.ds[t.di].Type {
+			switch t.cur().Type {
 			case OpSubStitution:
 				e, _ := exp.get(k)
 				fmt.Fprintf(t.w, "eq - %s  %s: %J\n", prefix, k, jsonFormatter{e})
@@ -120,7 +120,7 @@ func (t *diffTexter) Array(at Path, exp arrayExp, arr Array, prefix string) {
 			fmt.Fprintf(t.w, "cx - %s  %J\n", prefix, jsonFormatter{exp[index]})
 		}
 		if t.rest() && iAt.Equal(t.cur().At) {
-			switch t.ds[t.di].Type {
+			switch t.cur().Type {
 			case OpSubStitution:
 				fmt.Fprintf(t.w, "eq - %s  %J\n", prefix, jsonFormatter{exp[i]})
 				fmt.Fprintf(t.w, "eq + %s  %J\n", prefix, jsonFormatter{arr[i]})
