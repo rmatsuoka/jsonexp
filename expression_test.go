@@ -75,6 +75,6 @@ func TestParse(t *testing.T) {
 		ds: diffs,
 		di: 0,
 	}
-	dt.diffTextValue(Path{}, e.value, val, "")
+	dt.Value(Path{}, e.value, val, "")
 	t.Log(b.String())
 }

@@ -8,10 +8,6 @@ import (
 	"slices"
 )
 
-func DiffText(w io.Writer, ds []DiffLine, exp valueExp, val Value) {
-
-}
-
 type diffTexter struct {
 	w  io.Writer
 	ds []DiffLine
@@ -29,20 +25,50 @@ func (t *diffTexter) rest() bool {
 	return t.di < len(t.ds)
 }
 
-// diffTextValue must be called only if `at.isParent(t.cur().At)`
-func (t *diffTexter) diffTextValue(at Path, exp valueExp, val Value, prefix string) {
+func diffText(w io.Writer, diffs []DiffLine, exp valueExp, val Value) error {
+	if len(diffs) == 0 {
+		return nil
+	}
+	c := slices.Clone(diffs)
+	SortDiffLines(c)
+
+	ew := &errWriter{w: w}
+	t := diffTexter{
+		w:  ew,
+		ds: c,
+	}
+	t.Value(Path{}, exp, val, "")
+	return ew.err
+}
+
+type errWriter struct {
+	w   io.Writer
+	err error
+}
+
+func (w *errWriter) Write(p []byte) (int, error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	n, err := w.w.Write(p)
+	w.err = err
+	return n, err
+}
+
+// Value must be called only if `at.isParent(t.cur().At)`
+func (t *diffTexter) Value(at Path, exp valueExp, val Value, prefix string) {
 	switch exp := exp.(type) {
 	case objectExp:
-		t.diffTextObject(at, exp, val.(Object), prefix)
+		t.Object(at, exp, val.(Object), prefix)
 	case arrayExp:
-		t.diffTextArray(at, exp, val.(Array), prefix)
+		t.Array(at, exp, val.(Array), prefix)
 	default:
 		panic("unreachable")
 	}
 }
 
 // diffTextValue must be called if `at.isParent(t.cur().At)`
-func (t *diffTexter) diffTextObject(at Path, exp objectExp, obj Object, prefix string) {
+func (t *diffTexter) Object(at Path, exp objectExp, obj Object, prefix string) {
 	keys := slices.Sorted(maps.Keys(obj))
 
 	fmt.Fprintf(t.w, "{\n")
@@ -67,8 +93,7 @@ func (t *diffTexter) diffTextObject(at Path, exp objectExp, obj Object, prefix s
 			t.next()
 		} else if t.rest() && keyAt.IsAncestorOf(t.cur().At) {
 			fmt.Fprintf(t.w, "pa   %s  %s:", prefix, k)
-			t.diffTextValue(keyAt, exp[k], obj[k], prefix+"  ")
-			t.rest()
+			t.Value(keyAt, exp[k], obj[k], prefix+"  ")
 		} else {
 			fmt.Fprintf(t.w, "no   %s  %s: %J\n", prefix, k, jsonFormatter{obj[k]})
 		}
@@ -86,7 +111,7 @@ func (t *diffTexter) diffTextObject(at Path, exp objectExp, obj Object, prefix s
 	fmt.Fprintf(t.w, "     %s}\n", prefix)
 }
 
-func (t *diffTexter) diffTextArray(at Path, exp arrayExp, arr Array, prefix string) {
+func (t *diffTexter) Array(at Path, exp arrayExp, arr Array, prefix string) {
 	fmt.Fprintf(t.w, "[\n")
 	for i := range arr {
 		iAt := at.CloneAppend(ArrayIndex(i))
@@ -107,8 +132,7 @@ func (t *diffTexter) diffTextArray(at Path, exp arrayExp, arr Array, prefix stri
 			t.next()
 		} else if t.rest() && iAt.IsAncestorOf(t.cur().At) {
 			fmt.Fprintf(t.w, "pa   %s  ", prefix)
-			t.diffTextValue(iAt, exp[i], arr[i], prefix+"  ")
-			t.rest()
+			t.Value(iAt, exp[i], arr[i], prefix+"  ")
 		} else {
 			fmt.Fprintf(t.w, "no   %s  %J\n", prefix, jsonFormatter{arr[i]})
 		}

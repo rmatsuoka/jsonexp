@@ -2,6 +2,7 @@ package jsonexp
 
 import (
 	"encoding/json"
+	"fmt"
 	"maps"
 
 	"github.com/rmatsuoka/jsonexp/internal/diff"
@@ -57,6 +58,28 @@ func toExpValue(raw any) (valueExp, error) {
 		return nullExp{}, nil
 	default:
 		panic("unexpected type")
+	}
+}
+
+func (e *Expression) Diff(jsontext string) (*Diff, error) {
+	var v Value
+	err := json.Unmarshal([]byte(jsontext), &v)
+	if err != nil {
+		return nil, fmt.Errorf("jsonexp: %w", err)
+	}
+
+	return &Diff{
+		exp:   e.value,
+		value: v,
+		diffs: diffValue(e.value, v, Path{}),
+	}, nil
+}
+
+func (e *Expression) DiffValue(v Value) *Diff {
+	return &Diff{
+		exp:   e.value,
+		value: v,
+		diffs: diffValue(e.value, v, Path{}),
 	}
 }
 
