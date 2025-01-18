@@ -7,19 +7,19 @@ func equalValue(exp valueExp, val Value) bool {
 		if !ok {
 			return false
 		}
-		return exp.match(obj)
+		return exp.matchValue(obj)
 	case arrayExp:
 		arr, ok := val.(Array)
 		if !ok {
 			return false
 		}
-		return exp.match(arr)
+		return exp.matchValue(arr)
 	case *textExp:
-		return exp.match(val)
+		return exp.matchValue(val)
 	case numberExp:
-		return exp.match(val)
+		return exp.matchValue(val)
 	case booleanExp:
-		return exp.match(val)
+		return exp.matchValue(val)
 	case nil:
 		return val == nil
 	default:

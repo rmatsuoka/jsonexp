@@ -7,7 +7,7 @@ import (
 )
 
 type valueExp interface {
-	match(Value) bool
+	matchValue(Value) bool
 }
 
 type objectExp map[string]valueExp
@@ -44,7 +44,7 @@ func (e objectExp) sortedKeys() []string {
 	})
 }
 
-func (e objectExp) match(value Value) bool {
+func (e objectExp) matchValue(value Value) bool {
 	obj, ok := value.(Object)
 	if !ok {
 		return false
@@ -73,7 +73,7 @@ type arrayExp []valueExp
 
 var _ valueExp = arrayExp{}
 
-func (e arrayExp) match(value Value) bool {
+func (e arrayExp) matchValue(value Value) bool {
 	arr, ok := value.(Array)
 	if !ok {
 		return false
@@ -91,12 +91,12 @@ func (e arrayExp) match(value Value) bool {
 
 type numberExp float64
 
-func (e numberExp) match(v Value) bool {
+func (e numberExp) matchValue(v Value) bool {
 	return float64(e) == v
 }
 
 type booleanExp bool
 
-func (e booleanExp) match(v Value) bool {
+func (e booleanExp) matchValue(v Value) bool {
 	return bool(e) == v
 }

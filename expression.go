@@ -83,14 +83,14 @@ func listDiff(exp valueExp, value Value, at Path) (diffs []Diff) {
 		}
 		diffs = append(diffs, listDiffArray(exp, arr, at)...)
 	case *textExp:
-		if !exp.match(value) {
+		if !exp.matchValue(value) {
 			diffs = append(diffs, Diff{
 				At:   at,
 				Type: OpSubStitution,
 			})
 		}
 	case numberExp:
-		if !exp.match(value) {
+		if !exp.matchValue(value) {
 			diffs = append(diffs, Diff{
 				At:   at,
 				Type: OpSubStitution,

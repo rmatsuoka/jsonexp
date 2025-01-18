@@ -13,7 +13,7 @@ type textExp struct {
 	matchOnTyp func(any) bool
 }
 
-func (e *textExp) match(x any) bool {
+func (e *textExp) matchValue(x any) bool {
 	if !isType(x, e.typ) {
 		return false
 	}
