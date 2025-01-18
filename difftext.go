@@ -8,17 +8,17 @@ import (
 	"slices"
 )
 
-func DiffText(w io.Writer, ds []Diff, exp valueExp, val Value) {
+func DiffText(w io.Writer, ds []DiffLine, exp valueExp, val Value) {
 
 }
 
 type diffTexter struct {
 	w  io.Writer
-	ds []Diff
+	ds []DiffLine
 	di int
 }
 
-func (t *diffTexter) cur() Diff {
+func (t *diffTexter) cur() DiffLine {
 	return t.ds[t.di]
 }
 

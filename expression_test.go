@@ -68,7 +68,7 @@ func TestParse(t *testing.T) {
 	diffs := diffValue(e.value, val, Path{})
 	t.Logf("%+v", diffs)
 
-	SortDiff(diffs)
+	SortDiffLines(diffs)
 	b := strings.Builder{}
 	dt := diffTexter{
 		w:  &b,

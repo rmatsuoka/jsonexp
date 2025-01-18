@@ -6,7 +6,7 @@ import (
 	"github.com/rmatsuoka/jsonexp/internal/diff"
 )
 
-type Diff struct {
+type DiffLine struct {
 	At   Path
 	Type Operation
 }
@@ -45,8 +45,8 @@ func fromDiffOp(o diff.Operation) Operation {
 	}
 }
 
-func SortDiff(ds []Diff) {
-	slices.SortFunc(ds, func(x, y Diff) int {
+func SortDiffLines(ds []DiffLine) {
+	slices.SortFunc(ds, func(x, y DiffLine) int {
 		return x.At.Compare(y.At)
 	})
 }

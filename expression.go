@@ -60,12 +60,12 @@ func toExpValue(raw any) (valueExp, error) {
 	}
 }
 
-func diffValue(exp valueExp, value Value, parent Path) (diffs []Diff) {
+func diffValue(exp valueExp, value Value, parent Path) (diffs []DiffLine) {
 	switch exp := exp.(type) {
 	case objectExp:
 		obj, ok := value.(Object)
 		if !ok {
-			diffs = append(diffs, Diff{
+			diffs = append(diffs, DiffLine{
 				At:   parent,
 				Type: OpSubStitution,
 			})
@@ -75,7 +75,7 @@ func diffValue(exp valueExp, value Value, parent Path) (diffs []Diff) {
 	case arrayExp:
 		arr, ok := value.(Array)
 		if !ok {
-			diffs = append(diffs, Diff{
+			diffs = append(diffs, DiffLine{
 				At:   parent,
 				Type: OpSubStitution,
 			})
@@ -84,7 +84,7 @@ func diffValue(exp valueExp, value Value, parent Path) (diffs []Diff) {
 		diffs = append(diffs, diffArray(exp, arr, parent)...)
 	default:
 		if !exp.matchValue(value) {
-			diffs = append(diffs, Diff{
+			diffs = append(diffs, DiffLine{
 				At:   parent,
 				Type: OpSubStitution,
 			})
@@ -93,13 +93,13 @@ func diffValue(exp valueExp, value Value, parent Path) (diffs []Diff) {
 	return diffs
 }
 
-func diffObject(exp objectExp, obj Object, parent Path) (diffs []Diff) {
+func diffObject(exp objectExp, obj Object, parent Path) (diffs []DiffLine) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
 		at := parent.CloneAppend(ObjectKey(k))
 		expv, ok := exp.get(k)
 		if !ok {
-			diffs = append(diffs, Diff{
+			diffs = append(diffs, DiffLine{
 				At:   at,
 				Type: OpInsertion,
 			})
@@ -113,7 +113,7 @@ func diffObject(exp objectExp, obj Object, parent Path) (diffs []Diff) {
 		if k == "..." {
 			continue
 		}
-		diffs = append(diffs, Diff{
+		diffs = append(diffs, DiffLine{
 			At:   parent.CloneAppend(ObjectKey(k)),
 			Type: OpDeletion,
 		})
@@ -121,7 +121,7 @@ func diffObject(exp objectExp, obj Object, parent Path) (diffs []Diff) {
 	return diffs
 }
 
-func diffArray(exp arrayExp, arr Array, parent Path) (diffs []Diff) {
+func diffArray(exp arrayExp, arr Array, parent Path) (diffs []DiffLine) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return exp[ix].matchValue(arr[iy])
 	})
@@ -130,7 +130,7 @@ func diffArray(exp arrayExp, arr Array, parent Path) (diffs []Diff) {
 			diffs = append(diffs, diffValue(exp[d.Xi], arr[d.Yi], parent.CloneAppend(ArrayIndex(d.Xi)))...)
 			continue
 		}
-		diffs = append(diffs, Diff{
+		diffs = append(diffs, DiffLine{
 			At:   parent.CloneAppend(ArrayIndex(d.Yi)),
 			Type: fromDiffOp(d.Op),
 		})
