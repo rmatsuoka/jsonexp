@@ -94,15 +94,20 @@ func (p Path) IsAncestorOf(child Path) bool {
 
 type Node interface {
 	Node()
+
+	// Node is just for document. node is in order to prevent user to define custom Node.
+	node()
 }
 
 type ObjectKey string
 
 func (ObjectKey) Node() {}
+func (ObjectKey) node() {}
 
 type ArrayIndex int
 
 func (ArrayIndex) Node() {}
+func (ArrayIndex) node() {}
 
 func (p Path) Query(value Value) (Value, error) {
 	for _, n := range p {
