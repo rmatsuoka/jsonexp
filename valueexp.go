@@ -60,7 +60,7 @@ func (e objectExp) matchValue(value Value) bool {
 		if !ok {
 			return false
 		}
-		if !equalValue(expv, v) {
+		if !expv.matchValue(v) {
 			return false
 		}
 		delete(restKey, k)
@@ -82,7 +82,7 @@ func (e arrayExp) matchValue(value Value) bool {
 		return false
 	}
 	for i := range e {
-		if !equalValue(e[i], arr[i]) {
+		if !e[i].matchValue(arr[i]) {
 			return false
 		}
 	}

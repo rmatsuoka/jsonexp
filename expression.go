@@ -103,7 +103,7 @@ func listDiff(exp valueExp, value Value, at Path) (diffs []Diff) {
 				Type: OpSubStitution,
 			})
 		}
-	case nil:
+	case nullExp:
 		if value != nil {
 			diffs = append(diffs, Diff{
 				At:   at,
@@ -146,7 +146,7 @@ func listDiffObject(exp objectExp, obj Object, at Path) (diffs []Diff) {
 
 func listDiffArray(exp arrayExp, arr Array, at Path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
-		return equalValue(exp[ix], arr[iy])
+		return exp[ix].matchValue(arr[iy])
 	})
 	for _, d := range ds {
 		if d.Op == diff.OpSubStitution {
