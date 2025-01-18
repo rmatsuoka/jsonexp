@@ -54,7 +54,7 @@ func toExpValue(raw any) (valueExp, error) {
 	case bool:
 		return booleanExp(raw), nil
 	case nil:
-		return nil, nil
+		return nullExp{}, nil
 	default:
 		panic("unexpected type")
 	}

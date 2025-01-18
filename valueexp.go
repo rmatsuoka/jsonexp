@@ -100,3 +100,9 @@ type booleanExp bool
 func (e booleanExp) matchValue(v Value) bool {
 	return bool(e) == v
 }
+
+type nullExp struct{}
+
+func (nullExp) matchValue(v Value) bool {
+	return v == nil
+}
