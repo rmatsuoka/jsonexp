@@ -1,7 +1,6 @@
 package jsonexp
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -65,16 +64,5 @@ func TestParse(t *testing.T) {
   }
 }`)
 
-	diffs := diffValue(e.value, val, Path{})
-	t.Logf("%+v", diffs)
-
-	SortDiffLines(diffs)
-	b := strings.Builder{}
-	dt := diffTexter{
-		w:  &b,
-		ds: diffs,
-		di: 0,
-	}
-	dt.Value(Path{}, e.value, val, "")
-	t.Log(b.String())
+	t.Log(e.DiffValue(val).Text())
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type Expression struct {
-	value valueExp
+	exp valueExp
 }
 
 func Parse(b []byte) (*Expression, error) {
@@ -23,7 +23,7 @@ func Parse(b []byte) (*Expression, error) {
 		return nil, err
 	}
 	return &Expression{
-		value: value,
+		exp: value,
 	}, err
 }
 
@@ -69,17 +69,17 @@ func (e *Expression) Diff(jsontext string) (*Diff, error) {
 	}
 
 	return &Diff{
-		exp:   e.value,
+		exp:   e.exp,
 		value: v,
-		diffs: diffValue(e.value, v, Path{}),
+		diffs: diffValue(e.exp, v, Path{}),
 	}, nil
 }
 
 func (e *Expression) DiffValue(v Value) *Diff {
 	return &Diff{
-		exp:   e.value,
+		exp:   e.exp,
 		value: v,
-		diffs: diffValue(e.value, v, Path{}),
+		diffs: diffValue(e.exp, v, Path{}),
 	}
 }
 
