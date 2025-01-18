@@ -60,66 +60,43 @@ func toExpValue(raw any) (valueExp, error) {
 	}
 }
 
-func listDiff(exp valueExp, value Value, at Path) (diffs []Diff) {
+func diffValue(exp valueExp, value Value, parent Path) (diffs []Diff) {
 	switch exp := exp.(type) {
 	case objectExp:
 		obj, ok := value.(Object)
 		if !ok {
 			diffs = append(diffs, Diff{
-				At:   at,
+				At:   parent,
 				Type: OpSubStitution,
 			})
 			return diffs
 		}
-		diffs = append(diffs, listDiffObject(exp, obj, at)...)
+		diffs = append(diffs, diffObject(exp, obj, parent)...)
 	case arrayExp:
 		arr, ok := value.(Array)
 		if !ok {
 			diffs = append(diffs, Diff{
-				At:   at,
+				At:   parent,
 				Type: OpSubStitution,
 			})
 			return diffs
 		}
-		diffs = append(diffs, listDiffArray(exp, arr, at)...)
-	case *textExp:
-		if !exp.matchValue(value) {
-			diffs = append(diffs, Diff{
-				At:   at,
-				Type: OpSubStitution,
-			})
-		}
-	case numberExp:
-		if !exp.matchValue(value) {
-			diffs = append(diffs, Diff{
-				At:   at,
-				Type: OpSubStitution,
-			})
-		}
-	case booleanExp:
-		if exp != value {
-			diffs = append(diffs, Diff{
-				At:   at,
-				Type: OpSubStitution,
-			})
-		}
-	case nullExp:
-		if value != nil {
-			diffs = append(diffs, Diff{
-				At:   at,
-				Type: OpSubStitution,
-			})
-		}
+		diffs = append(diffs, diffArray(exp, arr, parent)...)
 	default:
-		panic("unreachable")
+		if !exp.matchValue(value) {
+			diffs = append(diffs, Diff{
+				At:   parent,
+				Type: OpSubStitution,
+			})
+		}
 	}
 	return diffs
 }
 
-func listDiffObject(exp objectExp, obj Object, at Path) (diffs []Diff) {
+func diffObject(exp objectExp, obj Object, parent Path) (diffs []Diff) {
 	restKeys := collectKey(maps.Keys(exp), true)
 	for k := range obj {
-		at := at.CloneAppend(ObjectKey(k))
+		at := parent.CloneAppend(ObjectKey(k))
 		expv, ok := exp.get(k)
 		if !ok {
 			diffs = append(diffs, Diff{
@@ -128,7 +105,7 @@ func listDiffObject(exp objectExp, obj Object, at Path) (diffs []Diff) {
 			})
 			continue
 		}
-		diffs = append(diffs, listDiff(expv, obj[k], at)...)
+		diffs = append(diffs, diffValue(expv, obj[k], at)...)
 		delete(restKeys, k)
 	}
 
@@ -137,24 +114,24 @@ func listDiffObject(exp objectExp, obj Object, at Path) (diffs []Diff) {
 			continue
 		}
 		diffs = append(diffs, Diff{
-			At:   at.CloneAppend(ObjectKey(k)),
+			At:   parent.CloneAppend(ObjectKey(k)),
 			Type: OpDeletion,
 		})
 	}
 	return diffs
 }
 
-func listDiffArray(exp arrayExp, arr Array, at Path) (diffs []Diff) {
+func diffArray(exp arrayExp, arr Array, parent Path) (diffs []Diff) {
 	ds := diff.Slice(len(exp), len(arr), func(ix, iy int) bool {
 		return exp[ix].matchValue(arr[iy])
 	})
 	for _, d := range ds {
 		if d.Op == diff.OpSubStitution {
-			diffs = append(diffs, listDiff(exp[d.Xi], arr[d.Yi], at.CloneAppend(ArrayIndex(d.Xi)))...)
+			diffs = append(diffs, diffValue(exp[d.Xi], arr[d.Yi], parent.CloneAppend(ArrayIndex(d.Xi)))...)
 			continue
 		}
 		diffs = append(diffs, Diff{
-			At:   at.CloneAppend(ArrayIndex(d.Yi)),
+			At:   parent.CloneAppend(ArrayIndex(d.Yi)),
 			Type: fromDiffOp(d.Op),
 		})
 	}
