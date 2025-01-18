@@ -7,15 +7,12 @@ import (
 )
 
 type valueExp interface {
-	valueExp()
 	match(Value) bool
 }
 
 type objectExp map[string]valueExp
 
 var _ valueExp = objectExp{}
-
-func (objectExp) valueExp() {}
 
 func (e objectExp) get(key string) (valueExp, bool) {
 	v, ok := e[key]
@@ -76,8 +73,6 @@ type arrayExp []valueExp
 
 var _ valueExp = arrayExp{}
 
-func (arrayExp) valueExp() {}
-
 func (e arrayExp) match(value Value) bool {
 	arr, ok := value.(Array)
 	if !ok {
@@ -96,8 +91,6 @@ func (e arrayExp) match(value Value) bool {
 
 type numberExp float64
 
-func (numberExp) valueExp() {}
-
 func (e numberExp) match(v Value) bool {
 	return float64(e) == v
 }
@@ -107,5 +100,3 @@ type booleanExp bool
 func (e booleanExp) match(v Value) bool {
 	return bool(e) == v
 }
-
-func (booleanExp) valueExp() {}
